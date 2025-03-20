@@ -39,10 +39,90 @@
    - 状态管理库：Vuex（Vue2）或 Pinia（Vue3）
 
 2. **slot 插槽的作用**  
-   - 默认插槽：`<slot>` 接收父组件内容  
-   - 具名插槽：通过 `name` 指定位置  
-   - 作用域插槽：子组件传递数据给父组件（`v-slot:name="props"`）
+   - 默认插槽：`<slot>` 接收父组件内容    
+    ```
+     // Card.vue
+    <template>
+      <div class="card">
+        <div class="card-header">标题</div>
+        <div class="card-body">
+          <!-- 默认插槽 -->
+          <slot>这是默认内容，当没有传入内容时显示</slot>
+        </div>
+      </div>
+    </template>
 
+    // 使用组件
+    <Card>
+      <p>这是插入到默认插槽的内容</p>
+    </Card>
+    ```
+   - 具名插槽：通过 `name` 指定位置  
+    ```
+    // Layout.vue
+    <template>
+      <div class="layout">
+        <header>
+          <slot name="header">默认页头</slot>
+        </header>
+        
+        <main>
+          <slot>默认主内容</slot>
+        </main>
+        
+        <footer>
+          <slot name="footer">默认页脚</slot>
+        </footer>
+      </div>
+    </template>
+    // 使用组件
+    <Layout>
+      <template v-slot:header>
+        自定义页头内容
+      </template>
+      <template v-slot:footer>
+        自定义页脚内容
+      </template>
+    </Layout>
+    ```
+
+   - 作用域插槽：子组件传递数据给父组件（`v-slot:name="props"`）
+   ```
+   // List.vue
+   <template>
+    <ul class="list">
+      <li v-for="item in items" :key="item.id">
+        <slot :item="item" :index="index">
+          <!-- 默认内容 -->
+          {{ item.name }}
+        </slot>
+      </li>
+    </ul>
+  </template>
+
+  <script>
+  export default {
+    data() {
+      return {
+        items: [
+          { id: 1, name: '项目1', desc: '描述1' },
+          { id: 2, name: '项目2', desc: '描述2' }
+        ]
+      }
+    }
+  }
+  </script>
+  // 使用组件
+  <List>
+    <template #default="{ item, index }">
+      <div class="item">
+        <span>{{ index + 1 }}. </span>
+        <strong>{{ item.name }}</strong>
+        <p>{{ item.desc }}</p>
+      </div>
+    </template>
+  </List>
+  ```
 3. **动态组件与异步组件**  
    - `<component :is="currentComponent">` 动态切换组件  
    - 异步组件：`defineAsyncComponent`（Vue3）或 `() => import()` 实现按需加载。
