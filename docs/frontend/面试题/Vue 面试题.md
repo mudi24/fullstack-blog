@@ -205,3 +205,86 @@
 
 4. **Vue3 迁移注意事项**  
    - 生命周期钩子更名（`beforeDestroy` → `beforeUnmount`），`$children` 移除，使用 `setup` 替代选项式 API。
+
+### Vue2和Vue3如何同时watch多个值
+
+#### Vue2
+
+计算属性结合`watch`
+
+```vue
+<script>
+export default {
+  data() {
+    return {
+      name: '',
+      age: 0
+    }
+  },
+  computed: {
+    // 将多个数据组合成一个计算属性
+    userInfo() {
+      return {
+        name: this.name,
+        age: this.age
+      }
+    }
+  },
+  watch: {
+    // 监听计算属性
+    userInfo: {
+      handler(newVal) {
+        console.log('userInfo changed:', newVal);
+      },
+      deep: true // 深度监听
+    }
+  }
+}
+</script>
+```
+
+使用 $watch API
+
+```vue
+<script>
+export default {
+  data() {
+    return {
+      form: {
+        name: '',
+        age: 0,
+        email: ''
+      }
+    }
+  },
+  created() {
+    // 使用 $watch 监听多个属性
+    const unwatch = this.$watch(
+      // 监听函数返回需要监听的值数组
+      () => [this.form.name, this.form.age, this.form.email],
+      // 回调函数
+      ([newName, newAge, newEmail], [oldName, oldAge, oldEmail]) => {
+        console.log('表单数据变化：', {
+          name: { from: oldName, to: newName },
+          age: { from: oldAge, to: newAge },
+          email: { from: oldEmail, to: newEmail }
+        });
+      },
+      { deep: true }
+    );
+
+    // 组件销毁前取消监听
+    this.$once('hook:beforeDestroy', unwatch);
+  }
+}
+</script>
+```
+
+#### Vue3
+
+```vue
+// 多个来源组成的数组
+watch([x, () => y.value], ([newX, newY]) => {
+  console.log(`x is ${newX} and y is ${newY}`)
+})
+```
